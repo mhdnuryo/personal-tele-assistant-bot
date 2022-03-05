@@ -1,5 +1,5 @@
 {
-  "name": "litequran-api",
+  "name": "shorten-url-bot",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -15,7 +15,6 @@
     "morgan": "~1.9.1",
     "nodemon": "^2.0.15",
     "pug": "2.0.0-beta11",
-    "puppeteer": "^13.4.1",
     "telegraf": "^4.7.0"
   }
 }

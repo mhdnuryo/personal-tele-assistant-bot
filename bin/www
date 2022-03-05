@@ -6,7 +6,6 @@
 
 var http = require('http');
 var app = require('../app');
-var puppeteer = require('puppeteer')
 var {Telegraf,Markup} = require('telegraf');
 var bot = new Telegraf(process.env.TOKEN)
 
@@ -31,118 +30,12 @@ server.on('error', onError);
 
 
 bot.start((ctx) => {
-  ctx.reply('ok')
+  ctx.reply(`ok`)
 })
 
-bot.command('surah',async (ctx,next) => {
-  openNewPage('https://litequran.net',
-    async (url,browser,page) => {
-      await page.goto(url,{
-        waitUntil : 'load',
-        timeout : 0
-      })
-      var result = await page.$$eval(
-        'ol.list>li>a',(nodes) => {
-          return nodes.map((node,index) => {
-            return node.innerHTML
-          })
-        }
-      )
-      
-      await next()
-
-      var _result = result.map((res) => {
-        return Markup.button.callback(res,res)
-      })
-
-
-      ctx.reply('menampilkan daftar surah',{
-        ...Markup.inlineKeyboard(_result,{
-          wrap : (index,row) => 2
-        })
-      })
-    }
-  )
+bot.command('timestamp',(ctx) => {
+  ctx.reply(Date.now())
 })
-
-openNewPage('https://litequran.net',
-  async (url,browser,page) => {
-    await page.goto(url,{
-      waitUntil : 'load',
-      timeout : 0
-    })
-    var result = await page.$$eval(
-        'ol.list>li>a',(nodes) => {
-          return nodes.map((node,index) => {
-            return node.innerHTML
-        })
-      }
-    )
-    result.map((res) => {
-      bot.action(res,(ctx) => {
-        var result = res.split(' ')
-        if(result.length > 1){
-          var [a,b] = result
-          var newB = b.split('')
-          var newNewB = newB.filter(
-           (c) => c != `'`
-          )
-          var newNewNewB = ''
-          for(c of newNewB){
-            newNewNewB += c
-          }
-          var newTitle = `${a}-${newNewNewB}`
-          var newLower = newTitle.toLowerCase()
-          openNewPage(`https://litequran.net/${newLower}`,
-            async (url,browser,page) => {
-              await page.goto(url,{
-                waitUntil : 'load',
-                timeout : 0
-              })
-              var result = await page.$$eval(
-                'span.ayat',(nodes) => {
-                  return nodes.map((node,index) => {
-                    return node.innerHTML
-                })
-              })
-              result.map((res) => {
-                ctx.reply(res)
-              })
-            })
-        }
-        else{
-          var [title] = result
-          var newTitle = title.split('')
-          var newNewTitle = newTitle.filter(
-            (c) => c != `'`
-          )
-          var newNewNewTitle = ''
-          for(c of newNewTitle){
-            newNewNewTitle += c
-          }
-          var newLower = newNewNewTitle.toLowerCase()
-          openNewPage(`https://litequran.net/${newLower}`,
-            async (url,browser,page) => {
-              await page.goto(url,{
-                waitUntil : 'load',
-                timeout : 0
-              })
-              var result = await page.$$eval(
-                'span.ayat',(nodes) => {
-                  return nodes.map((node,index) => {
-                    return node.innerHTML
-              })
-              result.map((res) => {
-                ctx.reply(res)
-              })
-            })
-          })
-      }
-      })
-    })
-  }
-)
-
 
 
 bot.launch()
@@ -155,7 +48,11 @@ async function openNewPage(url,next){
   var browser = await puppeteer.launch({
     headless : true,
     ignoreHTTPSErrors : true,
-    args: ['--no-sandbox','--disable-setuid-sandbox']
+    timeout : 0,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox'
+    ]
   })
   var page = await browser.newPage()
   next(url,browser,page)
