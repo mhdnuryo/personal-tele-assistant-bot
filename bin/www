@@ -57,13 +57,7 @@ bot.command('simsimi',(ctx) => {
 })
 
 bot.command('quit',(ctx) => {
-  if(ctx.message.chat.type == 'private'){
-    ctx.reply(`can't leave in private chat`)
-  }
-  else{
-   ctx.reply('bye bye')
-   ctx.leaveChat()
-  }
+ console.log(chat.message)
 })
 
 
