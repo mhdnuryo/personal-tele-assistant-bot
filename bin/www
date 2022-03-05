@@ -6,8 +6,11 @@
 
 var http = require('http');
 var app = require('../app');
+var axios = require('axios');
 var {Telegraf,Markup} = require('telegraf');
 var bot = new Telegraf(process.env.TOKEN)
+var api = "https://api.simsimi.net/v2"
+
 
 /**
  * Get port from environment and store in Express.
@@ -38,8 +41,18 @@ bot.command('timestamp',(ctx) => {
 })
 
 bot.command('simsimi',(ctx) => {
-  bot.on('text',(ctx) => {
-    console.log(ctx)
+  ctx.reply('ada yg bisa simi bantu?')
+  bot.on('text',async (ctx) => {
+    var {text} = ctx.update.message
+    try{
+      var {data} = await axios.get(
+        `${api}/?text=${text}&lc=id&cf=false`
+      )
+      ctx.reply(data.success)
+    }
+    catch({message}){
+      console.log(message)
+    }
   })
 })
 
