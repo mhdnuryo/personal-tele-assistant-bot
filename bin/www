@@ -35,9 +35,7 @@ server.on('error', onError);
 var activeCommand = []
 
 bot.start((ctx) => {
-  ctx.replyWithVideo({
-    source : 'http://techslides.com/demos/sample-videos/small.mp4'
-  })
+  ctx.replyWithVideo('http://techslides.com/demos/sample-videos/small.mp4')
 })
 
 bot.command('timestamp',(ctx) => {
