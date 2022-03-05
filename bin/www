@@ -56,8 +56,8 @@ bot.command('simsimi',(ctx) => {
   })
 })
 
-bot.command('quit',({telegram}) => {
-  console.log(telegram)
+bot.command('quit',({ctx}) => {
+  console.log(ctx.message.chat)
 })
 
 
