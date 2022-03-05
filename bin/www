@@ -57,7 +57,9 @@ bot.command('simsimi',(ctx) => {
 })
 
 bot.command('quit',(ctx) => {
- console.log(chat.message)
+  ctx.reply(JSON.stringify(
+    chat.message
+  ))
 })
 
 
