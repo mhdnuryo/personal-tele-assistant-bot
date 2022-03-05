@@ -45,7 +45,7 @@ bot.command('timestamp',(ctx) => {
 bot.command('simsimi',(ctx) => {
   activeCommand.push('simsimi')
   bot.on('text',(ctx) => {
-    var filter = activeCommand.filter((aC) => ac != 'simsimi')
+    var filter = activeCommand.filter((aC) => ac == 'simsimi')
     var isActive = filter.length > 0 ? true : false;
     if(isActive){
       ctx.reply('ada yg bisa simi bantu?')
