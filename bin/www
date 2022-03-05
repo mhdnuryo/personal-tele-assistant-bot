@@ -31,7 +31,7 @@ server.on('error', onError);
 
 
 bot.start((ctx) => {
-  ctx.reply('welcome')
+  ctx.reply('ok')
 })
 
 bot.command('surah',async (ctx,next) => {
