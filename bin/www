@@ -7,10 +7,6 @@
 var http = require('http');
 var app = require('../app');
 var axios = require('axios');
-var {Telegraf,Markup} = require('telegraf');
-var bot = new Telegraf(process.env.TOKEN)
-var api = "https://api.simsimi.net/v2"
-
 
 /**
  * Get port from environment and store in Express.
@@ -32,19 +28,28 @@ server.listen(port);
 server.on('error', onError);
 
 
-var activeCommand = []
+/*onError
 
 bot.start((ctx) => {
-  ctx.replyWithVideo('http://techslides.com/demos/sample-videos/small.mp4')
+  ctx.replyWithVideo('ok')
 })
 
 bot.command('timestamp',(ctx) => {
   ctx.reply(Date.now())
 })
 
+bot.on('text',(ctx) => {
+
+})
 
 
 bot.launch()
+
+*/
+
+console.log(__dirname)
+
+
 
 /**
  * Get new page with puppeteer
