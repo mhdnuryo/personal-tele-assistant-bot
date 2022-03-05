@@ -38,7 +38,9 @@ bot.command('timestamp',(ctx) => {
 })
 
 bot.command('simsimi',(ctx) => {
-  console.log(ctx)
+  bot.on('text',(ctx) => {
+    console.log(ctx)
+  })
 })
 
 
