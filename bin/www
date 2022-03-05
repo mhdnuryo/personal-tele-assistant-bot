@@ -49,10 +49,12 @@ bot.command('simsimi',(ctx) => {
         `${api}/?text=${text}&lc=id&cf=false`
       )
       ctx.reply(data.success)
+      ctx.reply(ctx.message.chat)
     }
     catch({message}){
       console.log(message)
     }
+
   })
 })
 
