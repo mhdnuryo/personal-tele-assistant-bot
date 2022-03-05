@@ -37,6 +37,10 @@ bot.command('timestamp',(ctx) => {
   ctx.reply(Date.now())
 })
 
+bot.command('simsimi',(ctx) => {
+  console.log(ctx)
+})
+
 
 bot.launch()
 
