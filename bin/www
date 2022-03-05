@@ -32,6 +32,8 @@ server.listen(port);
 server.on('error', onError);
 
 
+var activeCommand = []
+
 bot.start((ctx) => {
   ctx.reply(`ok`)
 })
@@ -41,27 +43,11 @@ bot.command('timestamp',(ctx) => {
 })
 
 bot.command('simsimi',(ctx) => {
-  ctx.reply('ada yg bisa simi bantu?')
-  bot.on('text',async (ctx) => {
-    var {text} = ctx.update.message
-    try{
-      var {data} = await axios.get(
-        `${api}/?text=${text}&lc=id&cf=false`
-      )
-      ctx.reply(data.success)
-      ctx.reply(ctx.message.chat)
-    }
-    catch({message}){
-      console.log(message)
-    }
-
-  })
+  activeCommand.push('simsimi')
 })
 
 bot.command('quit',(ctx) => {
-  ctx.reply(JSON.stringify(
-    ctx.message.chat
-  ))
+  ctx.reply(activeCommand)
 })
 
 
