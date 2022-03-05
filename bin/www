@@ -57,7 +57,7 @@ bot.command('simsimi',(ctx) => {
 })
 
 bot.command('quit',(ctx) => {
-  console.log(ctx)
+  ctx.leaveChat()
 })
 
 
