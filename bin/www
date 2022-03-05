@@ -58,7 +58,7 @@ bot.command('simsimi',(ctx) => {
 
 bot.command('quit',(ctx) => {
   ctx.reply(JSON.stringify(
-    chat.message
+    ctx.chat.message
   ))
 })
 
