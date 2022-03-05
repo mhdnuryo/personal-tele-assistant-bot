@@ -1,0 +1,210 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var http = require('http');
+var app = require('../app');
+var puppeteer = require('puppeteer')
+var {Telegraf,Markup} = require('telegraf');
+var bot = new Telegraf(process.env.TOKEN)
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+var port = normalizePort(process.env.PORT || '3000');
+
+/**
+ * Create HTTP server.
+ */
+
+var server = http.createServer(app);
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+server.listen(port);
+server.on('error', onError);
+
+
+bot.start((ctx) => {
+  ctx.reply('welcome')
+})
+
+bot.command('surah',async (ctx,next) => {
+  openNewPage('https://litequran.net',
+    async (url,browser,page) => {
+      await page.goto(url,{
+        waitUntil : 'load',
+        timeout : 0
+      })
+      var result = await page.$$eval(
+        'ol.list>li>a',(nodes) => {
+          return nodes.map((node,index) => {
+            return node.innerHTML
+          })
+        }
+      )
+      
+      await next()
+
+      var _result = result.map((res) => {
+        return Markup.button.callback(res,res)
+      })
+
+
+      ctx.reply('menampilkan daftar surah',{
+        ...Markup.inlineKeyboard(_result,{
+          wrap : (index,row) => 2
+        })
+      })
+    }
+  )
+})
+
+openNewPage('https://litequran.net',
+  async (url,browser,page) => {
+    await page.goto(url,{
+      waitUntil : 'load',
+      timeout : 0
+    })
+    var result = await page.$$eval(
+        'ol.list>li>a',(nodes) => {
+          return nodes.map((node,index) => {
+            return node.innerHTML
+        })
+      }
+    )
+    result.map((res) => {
+      bot.action(res,(ctx) => {
+        var result = res.split(' ')
+        if(result.length > 1){
+          var [a,b] = result
+          var newB = b.split('')
+          var newNewB = newB.filter(
+           (c) => c != `'`
+          )
+          var newNewNewB = ''
+          for(c of newNewB){
+            newNewNewB += c
+          }
+          var newTitle = `${a}-${newNewNewB}`
+          var newLower = newTitle.toLowerCase()
+          openNewPage(`https://litequran.net/${newLower}`,
+            async (url,browser,page) => {
+              await page.goto(url,{
+                waitUntil : 'load',
+                timeout : 0
+              })
+              var result = await page.$$eval(
+                'span.ayat',(nodes) => {
+                  return nodes.map((node,index) => {
+                    return node.innerHTML
+                })
+              })
+              result.map((res) => {
+                ctx.reply(res)
+              })
+            })
+        }
+        else{
+          var [title] = result
+          var newTitle = title.split('')
+          var newNewTitle = newTitle.filter(
+            (c) => c != `'`
+          )
+          var newNewNewTitle = ''
+          for(c of newNewTitle){
+            newNewNewTitle += c
+          }
+          var newLower = newNewNewTitle.toLowerCase()
+          openNewPage(`https://litequran.net/${newLower}`,
+            async (url,browser,page) => {
+              await page.goto(url,{
+                waitUntil : 'load',
+                timeout : 0
+              })
+              var result = await page.$$eval(
+                'span.ayat',(nodes) => {
+                  return nodes.map((node,index) => {
+                    return node.innerHTML
+              })
+              result.map((res) => {
+                ctx.reply(res)
+              })
+            })
+          })
+      }
+      })
+    })
+  }
+)
+
+
+
+bot.launch()
+
+/**
+ * Get new page with puppeteer
+ */
+
+async function openNewPage(url,next){
+  var browser = await puppeteer.launch({
+    headless : true,
+    ignoreHTTPSErrors : true
+  })
+  var page = await browser.newPage()
+  next(url,browser,page)
+}
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof port === 'string'
+    ? 'Pipe ' + port
+    : 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
