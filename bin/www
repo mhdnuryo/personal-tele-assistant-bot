@@ -35,32 +35,15 @@ server.on('error', onError);
 var activeCommand = []
 
 bot.start((ctx) => {
-  ctx.reply(`ok`)
+  ctx.replyWithVideo({
+    source : 'http://techslides.com/demos/sample-videos/small.mp4'
+  })
 })
 
 bot.command('timestamp',(ctx) => {
   ctx.reply(Date.now())
 })
 
-bot.command('simsimi',(ctx) => {
-  activeCommand.push('simsimi')
-  bot.on('text',(ctx) => {
-    var filter = activeCommand.filter((ac) => ac == 'simsimi')
-    var isActive = filter.length > 0 ? true : false;
-    if(isActive){
-      ctx.reply('ada yg bisa simi bantu?')
-    }
-  })
-})
-
-bot.command('leaveSimi',(ctx) => {
-  var filter = activeCommand.filter((ac) => ac != 'simsimi')
-  activeCommand = filter
-})
-
-bot.command('quit',(ctx) => {
-  ctx.reply(activeCommand)
-})
 
 
 bot.launch()
