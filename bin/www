@@ -27,13 +27,9 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 
-var prodDir = __dirname.split('\\');
+var dirname = __dirname.split('//')
 
-var devDir = __dirname.split('\\');
-
-var output = env == 'dev' ? devDir : `${prodDir}`;
-
-console.log({output})
+console.log(dirname)
 
 /*
 
