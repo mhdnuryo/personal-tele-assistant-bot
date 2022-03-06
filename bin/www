@@ -31,7 +31,7 @@ var prodDir = __dirname.split('\\');
 
 var devDir = __dirname.split('\\');
 
-var output = env == 'dev' ? devDir : `${prodDir}`;
+var output = env == 'dev' ? devDir : `${prodDir.split('//')}`;
 
 console.log({output})
 
