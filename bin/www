@@ -35,7 +35,7 @@ var [,,,localDir] = __dirname.split('\\');
 var workDir = env == 'dev' ? `${localDir}\\public` : `${onlineDir}/public`
 var outputPath = env == 'dev' ? `C:\\Users\\User\\${workDir}` : workDir
 
-var newYoutubeDownload = new youtubeDownload({outputPath});
+var newYoutubeDownload = new youtubeDownload();
 
 newYoutubeDownload.download("M903IdWvTv4");
 
