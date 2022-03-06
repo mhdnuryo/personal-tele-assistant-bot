@@ -7,6 +7,9 @@
 var http = require('http');
 var app = require('../app');
 var env = process.env.NODE_ENV
+var youtubeDownload = require(
+  'youtube-mp3-downloader'
+)
 
 /**
  * Get port from environment and store in Express.
@@ -27,13 +30,39 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 
-var [,onlineDir] = __dirname.split('/') // [ '/app/bin' ]
+var [,onlineDir] = __dirname.split('/');
 var [,,,localDir] = __dirname.split('\\');
-var workDir = env == 'dev' ? `${localDir}\\public` : `${onlineDir}//public`
-
+var workDir = env == 'dev' ? `${localDir}\\public` : `${onlineDir}/public`
 var outputPath = env == 'dev' ? `C:\\Users\\User\\${workDir}` : workDir
 
-console.log(outputPath)
+var newYoutubeDownload = new youtubeDownload({outputPath});
+
+newYoutubeDownload.download("M903IdWvTv4");
+
+newYoutubeDownload.on('finished',
+  (error,data) => {
+    console.log(
+      data
+    )
+  }
+)
+
+newYoutubeDownload.on('error',
+  (error) => {
+    console.log(
+      error
+    )
+  }
+)
+
+newYoutubeDownload.on('progress',
+  (progress) => {
+    console.log(
+      progress
+    )
+  }
+)
+
 
 /*
 
