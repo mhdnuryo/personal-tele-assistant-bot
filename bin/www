@@ -27,9 +27,11 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 
-var dirname = __dirname.split('/') // [ '/app/bin' ]
+var [,onlineDir] = __dirname.split('/') // [ '/app/bin' ]
+var [,,,localDir] = __dirname.split('\\');
+var workDir = env == 'dev' ? `${localDir}\\public` : `${onlineDir}/public`
 
-console.log(dirname)
+console.log(workDir)
 
 /*
 
