@@ -29,7 +29,7 @@ server.on('error', onError);
 
 var dirname = __dirname.split('/') // [ '/app/bin' ]
 
-console.log(newDirname)
+console.log(dirname)
 
 /*
 
