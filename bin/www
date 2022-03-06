@@ -27,13 +27,13 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 
-var [[prodDir]] = __dirname.split('\\');
+var prodDir = __dirname.split('\\');
 
-var [,,,devDir] = __dirname.split('\\');
+var devDir = __dirname.split('\\');
 
-var outputPath = env == 'dev' ? `c:\\users\\user\\${devDir}` : `${prodDir}`;
+var output = env == 'dev' ? devDir : `${prodDir}`;
 
-console.log({outputPath})
+console.log({output})
 
 /*
 
