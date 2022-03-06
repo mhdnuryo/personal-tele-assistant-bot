@@ -6,7 +6,7 @@
 
 var http = require('http');
 var app = require('../app');
-var axios = require('axios');
+var env = process.env.NODE_ENV
 
 /**
  * Get port from environment and store in Express.
@@ -27,8 +27,17 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 
+var [prodDir] = __dirname.split('\\');
 
-/*onError
+var [,,,devDir] = __dirname.split('\\');
+
+var outputPath = env == 'dev' ? `c:\\users\\user\\${devDir}` : `${prodDir}\\public`;
+
+var outputPath= outputPath + '\\public'
+
+console.log({outputPath})
+
+/*
 
 bot.start((ctx) => {
   ctx.replyWithVideo('ok')
@@ -47,7 +56,6 @@ bot.launch()
 
 */
 
-console.log(__dirname)
 
 
 
