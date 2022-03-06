@@ -27,7 +27,7 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 
-var dirname = __dirname.split('//') // [ '/app/bin' ]
+var [dirname] = __dirname.split('//') // [ '/app/bin' ]
 var newDirname = dirname.split('//')
 
 console.log(newDirname)
