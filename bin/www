@@ -27,13 +27,11 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 
-var [app,bin] = __dirname.split('\\');
+var [[prodDir]] = __dirname.split('\\');
 
 var [,,,devDir] = __dirname.split('\\');
 
-var outputPath = env == 'dev' ? `c:\\users\\user\\${devDir}` : `${app}`;
-
-var outputPath= outputPath + '\\public'
+var outputPath = env == 'dev' ? `c:\\users\\user\\${devDir}` : `${prodDir}`;
 
 console.log({outputPath})
 
