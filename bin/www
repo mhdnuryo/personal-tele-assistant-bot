@@ -7,8 +7,6 @@
 var fs = require('fs');
 var http = require('http');
 var app = require('../app');
-var env = process.env.NODE_ENV
-var puppeteer = require('puppeteer');
 var baseUrl = "https://www.youtube.com";
 var youtubeAudioServer = require('youtube-audio-server')
 var {Telegraf,Markup,Scenes,session} = require('telegraf');
@@ -26,119 +24,8 @@ downloader.setFolder(
 )
 */
 
-console.log('ready to use')
 
 var bot = new Telegraf(process.env.TOKEN)
-
-
-// Using puppeteer
-
-/*
-
-var searchWizard = new Scenes.WizardScene(
-  'search-wizard',(ctx) => {
-    if(ctx.update.message.text != '/quit'){
-      ctx.reply(`ok, i'm hear`);
-      return ctx.wizard.next();
-    }
-    else{
-      ctx.reply('you have been quit');
-      ctx.scene.leave()
-    }
-  },(ctx) => {
-    var {text} = ctx.update.message;
-    if(text == '/quit'){
-      ctx.reply('you have been quit')
-      ctx.scene.leave()
-    }
-    else{
-      ctx.reply(`search for ${text}`);
-      openNewPage(`${resultUrl}${text}`,
-        async (url,browser,page) => {
-          await page.goto(url,{
-            waitUntil : 'networkidle2',
-            timeout : 0
-          })
-          var result = await page.$$eval(
-            'a#video-title',(records) => {
-              return records.map((record) => {
-                var title = record.getAttribute('title');
-                 var link = record.getAttribute('href');
-                 return {title,link}
-              })
-            }
-          )
-          result.map(({link}) => {
-            bot.action(link,(ctx) => {
-              var {data} = ctx.update.callback_query;
-              var [,videoId] = data.split('=');
-              downloader.download({
-                id : videoId,
-                metadata : true
-              });
-              downloader.onError((err) => {
-                ctx.reply(err)
-              })
-              downloader.onSuccess((s) => {
-                ctx.replyWithDocument({
-                  source : s.file
-                })
-              })
-            })
-          })
-          result.map(({title,link}) => {
-            var [,id] = link.split('/')
-            ctx.reply(
-              `${baseUrl}/${id}`,
-              Markup.inlineKeyboard([
-                Markup.button.callback(
-                  `${title} - Download`,
-                  link
-                )
-              ])
-            )
-          })
-          return ctx.wizard.next()
-        }
-      )
-    }
-  },(ctx) => {
-    if(ctx.update.message){
-      var {text} = ctx.update.message;
-      if(text == '/quit'){
-        ctx.reply('you have been quit');
-        ctx.scene.leave();
-      }
-      else{
-        ctx.wizard.back();
-        ctx.wizard.steps[
-        ctx.wizard.cursor
-        ](ctx)
-      }
-    }
-    else{
-      var {data} = ctx.update.callback_query;
-      var [,videoId] = data.split('=');
-      downloader.download({
-        id : videoId,
-        metadata : true
-      });
-      downloader.onError((err) => {
-        ctx.reply(err)
-      })
-      downloader.onSuccess((s) => {
-        ctx.replyWithDocument({
-          source : s.file
-        })
-      })
-    }
-  }
-)
-
-*/
-
-
-// Using youtube key
 
 var searchWizard = new Scenes.WizardScene(
   'search-wizard',(ctx) => {
