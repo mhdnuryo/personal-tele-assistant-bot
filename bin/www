@@ -87,8 +87,8 @@ var searchWizard = new Scenes.WizardScene(
                 id: data,
                 metadata : true
               })
-              downloader.onError(({message}) => {
-                console.log(message)
+              downloader.onError((error) => {
+                console.log(error)
               })
               downloader.onSuccess(async(sO) => {
                 try{
@@ -183,8 +183,8 @@ var searchWizard = new Scenes.WizardScene(
         downloader.download({
           id : data, metadata : true
         })
-        downloader.onError(({message}) => {
-          console.log(err)
+        downloader.onError((error) => {
+          console.log(error)
         })
         downloader.onSuccess(async(sO) => {
           try{
