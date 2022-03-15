@@ -1,5 +1,5 @@
 {
-  "name": "shorten-url-bot",
+  "name": "personal-bot",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -11,12 +11,14 @@
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.0.0",
+    "dropbox": "^10.26.0",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
     "nodemon": "^2.0.15",
     "pug": "2.0.0-beta11",
     "telegraf": "^4.7.0",
+    "youtube-audio-server": "^2.8.2",
     "youtube-mp3-downloader": "^0.7.10"
   }
 }

@@ -4,12 +4,311 @@
  * Module dependencies.
  */
 
+var fs = require('fs');
 var http = require('http');
 var app = require('../app');
 var env = process.env.NODE_ENV
-var youtubeDownload = require(
-  'youtube-mp3-downloader'
+var puppeteer = require('puppeteer');
+var baseUrl = "https://www.youtube.com";
+var youtubeAudioServer = require('youtube-audio-server')
+var {Telegraf,Markup,Scenes,session} = require('telegraf');
+var resultUrl = "https://www.youtube.com/results?search_query=";
+
+youtubeAudioServer.setKey(
+  'AIzaSyD2ikn5A-hdGgXQx6PBBfxAlPAwCafQeeA'
+);
+
+var downloader = youtubeAudioServer.downloader;
+
+/*
+downloader.setFolder(
+  'https://content.dropboxapi.com'
 )
+*/
+
+console.log('ready to use')
+
+var bot = new Telegraf(process.env.TOKEN)
+
+
+// Using puppeteer
+
+/*
+
+var searchWizard = new Scenes.WizardScene(
+  'search-wizard',(ctx) => {
+    if(ctx.update.message.text != '/quit'){
+      ctx.reply(`ok, i'm hear`);
+      return ctx.wizard.next();
+    }
+    else{
+      ctx.reply('you have been quit');
+      ctx.scene.leave()
+    }
+  },(ctx) => {
+    var {text} = ctx.update.message;
+    if(text == '/quit'){
+      ctx.reply('you have been quit')
+      ctx.scene.leave()
+    }
+    else{
+      ctx.reply(`search for ${text}`);
+      openNewPage(`${resultUrl}${text}`,
+        async (url,browser,page) => {
+          await page.goto(url,{
+            waitUntil : 'networkidle2',
+            timeout : 0
+          })
+          var result = await page.$$eval(
+            'a#video-title',(records) => {
+              return records.map((record) => {
+                var title = record.getAttribute('title');
+                 var link = record.getAttribute('href');
+                 return {title,link}
+              })
+            }
+          )
+          result.map(({link}) => {
+            bot.action(link,(ctx) => {
+              var {data} = ctx.update.callback_query;
+              var [,videoId] = data.split('=');
+              downloader.download({
+                id : videoId,
+                metadata : true
+              });
+              downloader.onError((err) => {
+                ctx.reply(err)
+              })
+              downloader.onSuccess((s) => {
+                ctx.replyWithDocument({
+                  source : s.file
+                })
+              })
+            })
+          })
+          result.map(({title,link}) => {
+            var [,id] = link.split('/')
+            ctx.reply(
+              `${baseUrl}/${id}`,
+              Markup.inlineKeyboard([
+                Markup.button.callback(
+                  `${title} - Download`,
+                  link
+                )
+              ])
+            )
+          })
+          return ctx.wizard.next()
+        }
+      )
+    }
+  },(ctx) => {
+    if(ctx.update.message){
+      var {text} = ctx.update.message;
+      if(text == '/quit'){
+        ctx.reply('you have been quit');
+        ctx.scene.leave();
+      }
+      else{
+        ctx.wizard.back();
+        ctx.wizard.steps[
+        ctx.wizard.cursor
+        ](ctx)
+      }
+    }
+    else{
+      var {data} = ctx.update.callback_query;
+      var [,videoId] = data.split('=');
+      downloader.download({
+        id : videoId,
+        metadata : true
+      });
+      downloader.onError((err) => {
+        ctx.reply(err)
+      })
+      downloader.onSuccess((s) => {
+        ctx.replyWithDocument({
+          source : s.file
+        })
+      })
+    }
+  }
+)
+
+*/
+
+
+// Using youtube key
+
+var searchWizard = new Scenes.WizardScene(
+  'search-wizard',(ctx) => {
+    ctx.session.next = false;
+    ctx.reply(`input search keyword please`);
+    return ctx.wizard.next();
+  },async(ctx) => {
+    var message = ctx.update.message;
+    var next = ctx.session.next == true ? true : false;
+    if(!next){
+      var {text} = ctx.update.message
+      if(text == '/quit'){
+        ctx.reply('you have been quit');
+        ctx.scene.leave()
+      }
+    }
+    var searchObject = next ? {...ctx.session.searchQuery} : {query : message.text, page : null}
+    if((ctx.update.message && ctx.update.message.text != '/quit') || ctx.update.callback_query){
+    try{
+      if(!next){
+        await ctx.reply(`search for ${searchObject.query}`)
+      }
+      
+      await youtubeAudioServer.search(
+        searchObject,async(err,data) => {
+          var length = data.items.length;
+          ctx.session.searchQuery = {
+            query : searchObject.query,
+            page : data.nextPageToken
+          }
+          if(ctx.session.hasOwnProperty('counter')){
+            ctx.session.counter += data.items.length
+          }
+          else{
+            ctx.session.counter = data.items.length
+          }
+          await data.items.map(({snippet,id}) => {
+            if(id.videoId != undefined){
+              if(ctx.session.hasOwnProperty('result')){
+                ctx.session.result.push({
+                  id : id.videoId,
+                  title : snippet.title
+                })
+              }
+              else{
+                ctx.session.result = [{
+                  id : id.videoId,
+                  title : snippet.title
+                }]
+              }
+            }
+          })
+          await data.items.map(({snippet,id}) => {
+            if(id.videoId != undefined){
+            bot.action(id.videoId,(ctx) => {
+              var {data} = ctx.update.callback_query;
+              ctx.reply(`download ${snippet.title}`);
+              downloader.download({
+                id: data,
+                metadata : true
+              })
+              downloader.onError(err => {
+                console.log(err)
+              })
+              downloader.onSuccess(({file}) => {
+                console.log(file)
+              })
+            })
+            }
+          })
+          await data.items.map(async(item,index) => {
+            if(item.id.videoId != undefined){
+            if(index == data.items.length -1){
+              await ctx.reply(
+                `${baseUrl}/watch?v=${item.id.videoId}`,
+                Markup.inlineKeyboard([
+                  Markup.button.callback(
+                    `${item.snippet.title} - Download`,
+                    item.id.videoId
+                  )
+                ])
+              )
+              var {counter} = ctx.session
+              var before = counter - length + 1;
+              var newBefore = before.toString().split('');
+              var newNewBefore = newBefore.length < 2 ? `0${before}` : before;
+              var value = `from ${newNewBefore} until ${counter}`;
+              var message = `display result ${value}, continue search or quit now???`;
+              var nextBtn  = Markup.button.callback('Next','next');
+              var quitBtn = Markup.button.callback('Quit','quit');
+              ctx.reply(message,Markup.inlineKeyboard([nextBtn,quitBtn]));
+            }
+            else{
+              ctx.reply(
+                `${baseUrl}/watch?v=${item.id.videoId}`,
+                Markup.inlineKeyboard([
+                  Markup.button.callback(
+                    `${item.snippet.title} - Download`,
+                     item.id.videoId
+                  )
+                ])
+              )
+            }
+            }
+          })
+        }
+      )
+      return ctx.wizard.next();
+    }
+    catch({message}){
+      ctx.reply(message);
+      ctx.reply('you have been quit..');
+      ctx.scene.leave();
+    }
+    }
+  },(ctx) => {
+    if(ctx.update.message){
+      var {text} = ctx.update.message;
+      if(text == '/quit'){
+        ctx.reply('you have been quit');
+        ctx.session.next = false;
+        ctx.session.counter = 0;
+        ctx.scene.leave();
+      }
+      else{
+        ctx.session.next = false;
+        ctx.session.counter = 0;
+        ctx.wizard.back();
+        ctx.wizard.steps[
+        ctx.wizard.cursor
+        ](ctx)
+      }
+    }
+    else{
+      var {data} = ctx.update.callback_query;
+      if(data == 'next'){
+        ctx.session.next = true;
+        ctx.wizard.back();
+        ctx.wizard.steps[
+        ctx.wizard.cursor
+        ](ctx)
+      }
+      else{
+        var [{id,title}] = ctx.session.result.filter(
+          ({id}) => id == data
+        )
+        ctx.reply(`download ${title}`)
+        downloader.download({
+          id : data, metadata : true
+        })
+        downloader.onError((err) => {
+          console.log(err)
+        })
+        downloader.onSuccess((sO)=> {
+          console.log(sO.file)
+        })
+      }
+    }
+  }
+)
+
+var stage = new Scenes.Stage([
+  searchWizard
+])
+
+ 
+bot.use(session())
+
+bot.use(stage.middleware())
+
 
 /**
  * Get port from environment and store in Express.
@@ -30,61 +329,21 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 
-var [,onlineDir] = __dirname.split('/');
-var [,,,localDir] = __dirname.split('\\');
-var workDir = env == 'dev' ? `${localDir}\\public` : `${onlineDir}/public`
-var outputPath = env == 'dev' ? `C:\\Users\\User\\${workDir}` : workDir
-
-var newYoutubeDownload = new youtubeDownload();
-
-newYoutubeDownload.download("M903IdWvTv4");
-
-newYoutubeDownload.on('finished',
-  (error,data) => {
-    console.log(
-      data
-    )
-  }
-)
-
-newYoutubeDownload.on('error',
-  (error) => {
-    console.log(
-      error
-    )
-  }
-)
-
-newYoutubeDownload.on('progress',
-  (progress) => {
-    console.log(
-      progress
-    )
-  }
-)
-
-
-/*
 
 bot.start((ctx) => {
-  ctx.replyWithVideo('ok')
+  ctx.reply('ok')
 })
 
-bot.command('timestamp',(ctx) => {
-  ctx.reply(Date.now())
+bot.command('search',(ctx) => {
+  return ctx.scene.enter(
+    'search-wizard'
+  )
 })
 
-bot.on('text',(ctx) => {
 
-})
 
 
 bot.launch()
-
-*/
-
-
-
 
 /**
  * Get new page with puppeteer
@@ -95,10 +354,6 @@ async function openNewPage(url,next){
     headless : true,
     ignoreHTTPSErrors : true,
     timeout : 0,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox'
-    ]
   })
   var page = await browser.newPage()
   next(url,browser,page)
